@@ -359,6 +359,7 @@ String getDataTypeKeyword(String fromPos, String len, String dataType, String de
 		}
 
 		// data type
+		// TODO is this all the possible data types?
 		switch (dataType) {
 		case "":	// data structures
 			dataTypeKwd = "";
