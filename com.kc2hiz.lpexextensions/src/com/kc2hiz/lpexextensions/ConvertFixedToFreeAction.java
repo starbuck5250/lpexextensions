@@ -1,9 +1,9 @@
 package com.kc2hiz.lpexextensions; 
 
 import com.ibm.lpex.core.LpexAction;
-
 import com.ibm.lpex.core.LpexView;
 import com.ibm.lpex.core.LpexLog;
+
 import java.util.ArrayList;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
@@ -15,9 +15,20 @@ import java.util.regex.Matcher;
  * @author buck
  * @version 01.00.00 Initial
  * @version 01.00.01 Add H-spec
+ * @version 01.00.02 Add global variable for column to start free-form in
  *
  */ 
 public class ConvertFixedToFreeAction implements LpexAction {
+
+	public ConvertFixedToFreeAction() {
+		// empty constructor
+	}
+	
+	
+	
+	// default start column where free-form code will be placed
+	int startColumn = 1;
+	int padColumns = startColumn - 1;
 	
 	/**
 	 * Check to see if we should be allowed to perform the D to free conversion
@@ -50,7 +61,7 @@ public class ConvertFixedToFreeAction implements LpexAction {
 			return;
 		}
 
-		// need to at least see 6 columns or we don't possibly have a d-spec
+		// need to at least see 6 columns or we don't possibly have a fixed form spec
 		if (sourceStmt.length() <= 5) {
 			view.doCommand("set messageText Line too short");
 			return;
@@ -117,14 +128,11 @@ public class ConvertFixedToFreeAction implements LpexAction {
 		// Instantiate a DSpec object.  The constructor will break out the columns.
 		HSpec hspec = new HSpec(view, sourceStmt, thisLine);
 
-		int e = 0;
 		int lastSubfieldNumber = view.currentElement();	
-		int specLineNumber = view.currentElement();	
-		String dsTemp = "";
 		ArrayList<String> dsLines = new ArrayList<String>();
 		String dsDclTemp = "";
-				
-		dsDclTemp = "        ctl-opt";
+		ConvertFixedToFreeAction c = new ConvertFixedToFreeAction();
+		dsDclTemp = c.padLeft("ctl-opt", padColumns);
 				
 		// if there are keywords, append them
 		if (hspec.keywords.length() != 0) {
@@ -313,6 +321,7 @@ private void convertSubfieldsToFree(LpexView view, DSpec dspec) {
 
 /**
  * build up the data type keyword based on the data type
+ *   which has been partially parsed out of the d-spec
  * @param fromPos String
  * @param len String
  * @param dataType String
@@ -320,7 +329,7 @@ private void convertSubfieldsToFree(LpexView view, DSpec dspec) {
  * @param keywords String
  * @return dataTypeKwd String
  */
-private String getDataTypeKeyword(String fromPos, String len, String dataType, String decimals, String keywords) {
+String getDataTypeKeyword(String fromPos, String len, String dataType, String decimals, String keywords) {
 	String dataTypeKwd = "";
 	int tempLen = 0;
 
@@ -406,7 +415,7 @@ private String getDataTypeKeyword(String fromPos, String len, String dataType, S
 String getSpecFromText(String sourceStmt) {
 	String spec = "";
 	
-	if (sourceStmt.length() > 5) {
+	if (sourceStmt.length() > 5 && isComment(sourceStmt) == false) {
 		spec = sourceStmt.substring(5, 6).toLowerCase();
 	}
 	return spec;
@@ -425,14 +434,14 @@ boolean isComment = false;
 if (sourceStmt.length() >= 8) {
 
 	// comments can be either a * in column 7 or
-	// a pair of slashes preceded by white space
+	// a pair of slashes preceded by optional white space
 	// the first is easy:
 	if (sourceStmt.substring(6, 7).equals("*")) {
 		isComment = true;
 	}
 
 	// the second is a bit harder: 
-	if (sourceStmt.matches(".{5} *//.*")) {
+	if (sourceStmt.matches(" *//.*")) {
 		isComment = true;
 	}
 }
@@ -450,15 +459,15 @@ String comment = "";
 if (isComment(sourceStmt)) {
 
 	// comments can be either a * in column 7 or
-	// a pair of slashes preceded by white space
+	// a pair of slashes preceded by optional white space
 	// the first is easy:
 	if (sourceStmt.substring(6, 7).equals("*")) {
-		comment = sourceStmt.substring(8, sourceStmt.length());
+		comment = sourceStmt.substring(7, sourceStmt.length());
 	}
 
 	// the second is a bit harder: 
-	if (sourceStmt.matches(".{5} *//.*")) {
-		String[] parts = sourceStmt.split(".{5} *//");
+	if (sourceStmt.matches(" *//.*")) {
+		String[] parts = sourceStmt.split(" *//");
 		comment = parts[1];
 	}
 }
@@ -496,6 +505,19 @@ if (DEBUG) {
 }	
 
 
+}
+
+/**
+ * Left pad a string
+ * returns the original string with 1-based space characters on the left
+ * @parm spec String
+ */
+public String padLeft(String spec, int padLength) {
+	String pad = new String("");
+	if (padLength > 0) {
+		for (int i = 1; i <= padLength; i++)
+			pad += " ";}
+	return pad + spec;
 }
 
 
@@ -586,6 +608,9 @@ private String getKeywordsFromHSpec(String sourceStmt) {
  * This stores the various column based fields for a d-spec
  * This object tokenises the line with the definitions.  It will also move backward 
  * in the view's text lines to accumulate names continued from earlier lines.
+ * 
+ * TODO: Break apart the Lpexview dependency
+ * 
  * @param view LpexView 
  * @param dSpec String a single raw d-spec (field / subfield)
  * @author buck
