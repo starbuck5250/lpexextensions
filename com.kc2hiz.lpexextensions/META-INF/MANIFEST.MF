@@ -2,20 +2,18 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Lpexextensions
 Bundle-SymbolicName: com.kc2hiz.lpexextensions;singleton:=true
-Bundle-Version: 1.0.1.qualifier
+Bundle-Version: 1.0.3.qualifier
+Bundle-ClassPath: .
 Bundle-Activator: com.kc2hiz.lpexextensions.Activator
 Bundle-Vendor: KC2HIZ
+Export-Package: com.kc2hiz.lpexextensions;version="1.0.3.qualifier"
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  com.ibm.lpex;bundle-version="4.2.5",
  org.eclipse.ui,
  org.eclipse.core.runtime,
- org.junit
+ org.junit,
+ org.eclipse.ui,
+ org.eclipse.core.runtime
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
-Export-Package: com.kc2hiz.lpexextensions;
-  uses:="com.ibm.lpex.core,
-   org.eclipse.ui.plugin,
-   org.osgi.framework,
-   com.ibm.lpex.alef"
-Bundle-ClassPath: .

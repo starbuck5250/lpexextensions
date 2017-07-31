@@ -6,8 +6,7 @@ import org.osgi.framework.BundleContext;
 /**
  * The activator class controls the plug-in life cycle
  */
-public class Activator extends AbstractUIPlugin 
-	implements com.ibm.lpex.alef.LpexPreload {
+public class Activator extends AbstractUIPlugin {
 
 	// The plug-in ID
 	public static final String PLUGIN_ID = "com.kc2hiz.lpexextensions"; //$NON-NLS-1$
@@ -46,10 +45,6 @@ public class Activator extends AbstractUIPlugin
 	 */
 	public static Activator getDefault() {
 		return plugin;
-	}
-	
-	public void preload() {
-		
 	}
 
 }
