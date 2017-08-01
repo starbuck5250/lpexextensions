@@ -34,6 +34,7 @@ public class ConvertFixedToFreeActionTest {
 		assertEquals("Comment", true, c.isComment("     c* this is a comment"));
 		assertEquals("Comment free", true, c.isComment("// this is a comment"));
 		assertEquals("Comment free 8", true, c.isComment("       // this is a comment"));
+		assertEquals("**", false, c.isComment("**      // part of the compile time table"));
 	}
 
 	@Test
