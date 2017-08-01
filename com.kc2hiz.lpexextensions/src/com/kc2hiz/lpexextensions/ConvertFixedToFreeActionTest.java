@@ -9,9 +9,9 @@ public class ConvertFixedToFreeActionTest {
 	@Test
 	public void testGetSpecFromText() {
 		ConvertFixedToFreeAction c = new ConvertFixedToFreeAction();
-		assertEquals("Null input", "", c.getSpecFromText(""));
-		assertEquals("comment", "", c.getSpecFromText("      *comment"));
-		assertEquals("comment free 1", "", c.getSpecFromText("//comment"));
+		assertEquals("Null input", " ", c.getSpecFromText(""));
+		assertEquals("comment", " ", c.getSpecFromText("      *comment"));
+		assertEquals("comment free 1", " ", c.getSpecFromText("//comment"));
 		assertEquals("H", "h", c.getSpecFromText("     h debug"));
 		assertEquals("F", "f", c.getSpecFromText("     fqsysprt"));
 		assertEquals("E", "e", c.getSpecFromText("     earray"));
@@ -22,6 +22,7 @@ public class ConvertFixedToFreeActionTest {
 		assertEquals("D", "d", c.getSpecFromText("     d variable 10i 0"));
 		assertEquals("P", "p", c.getSpecFromText("     p   b"));
 		assertEquals("/copy", " ", c.getSpecFromText("      /copy qprotosrc"));
+		assertEquals("**", " ", c.getSpecFromText("**  Compile-time table"));
 	}
 
 	@Test

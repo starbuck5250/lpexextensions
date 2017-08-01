@@ -411,13 +411,17 @@ String getDataTypeKeyword(String fromPos, String len, String dataType, String de
 /**
 * Extract RPG specification type (D, P, C, F) from a line of source code
 * @param sourceStmt String raw text
-* @return spec String lower case spec (c, d, f, p, etc.)
+* @return spec String lower case spec (c, d, f, p, etc or blank if not a spec we care about)
+* 
+* We don't need to worry about free-form declarations, because they're already free :-)
 */
 String getSpecFromText(String sourceStmt) {
-	String spec = "";
+	String spec = " ";
 	
 	if (sourceStmt.length() > 5 && isComment(sourceStmt) == false) {
-		spec = sourceStmt.substring(5, 6).toLowerCase();
+		if (!sourceStmt.substring(0, 2).equals("**")) {
+			spec = sourceStmt.substring(5, 6).toLowerCase();
+		}
 	}
 	return spec;
 }
