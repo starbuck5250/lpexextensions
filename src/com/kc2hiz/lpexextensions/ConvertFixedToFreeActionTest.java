@@ -1,29 +1,60 @@
 package com.kc2hiz.lpexextensions;
 
 import static org.junit.Assert.*;
-
 import org.junit.Test;
+
+import com.ibm.lpex.core.LpexView;
 
 public class ConvertFixedToFreeActionTest {
 
 	@Test
-	public void testGetSpecFromText() {
+	public void testGetSpecFromTextNaive() {
 		ConvertFixedToFreeAction c = new ConvertFixedToFreeAction();
-		assertEquals("Null input", " ", c.getSpecFromText(""));
-		assertEquals("comment", " ", c.getSpecFromText("      *comment"));
-		assertEquals("comment free 1", " ", c.getSpecFromText("//comment"));
-		assertEquals("H", "h", c.getSpecFromText("     h debug"));
-		assertEquals("F", "f", c.getSpecFromText("     fqsysprt"));
-		assertEquals("E", "e", c.getSpecFromText("     earray"));
-		assertEquals("L", "l", c.getSpecFromText("     lqsysprt"));
-		assertEquals("I", "i", c.getSpecFromText("     i 01   25"));
-		assertEquals("C", "c", c.getSpecFromText("     c   begin   tag"));
-		assertEquals("O", "o", c.getSpecFromText("     o udate y"));
-		assertEquals("D", "d", c.getSpecFromText("     d variable 10i 0"));
-		assertEquals("P", "p", c.getSpecFromText("     p   b"));
-		assertEquals("/copy", " ", c.getSpecFromText("      /copy qprotosrc"));
-		assertEquals("**", " ", c.getSpecFromText("**  Compile-time table"));
+		assertEquals("Null input", "?", c.getSpecFromTextNaive(""));
+		assertEquals("comment", "*", c.getSpecFromTextNaive("      *comment"));
+		assertEquals("comment free 1", "*", c.getSpecFromTextNaive("//comment"));
+		assertEquals("H", "h", c.getSpecFromTextNaive("     h debug"));
+		assertEquals("F", "f", c.getSpecFromTextNaive("     fqsysprt"));
+		assertEquals("E", "e", c.getSpecFromTextNaive("     earray"));
+		assertEquals("L", "l", c.getSpecFromTextNaive("     lqsysprt"));
+		assertEquals("I", "i", c.getSpecFromTextNaive("     i 01   25"));
+		assertEquals("C", "c", c.getSpecFromTextNaive("     c   begin   tag"));
+		assertEquals("O", "o", c.getSpecFromTextNaive("     o udate y"));
+		assertEquals("D", "d", c.getSpecFromTextNaive("     d variable 10i 0"));
+		assertEquals("P", "p", c.getSpecFromTextNaive("     p   b"));
+		assertEquals("/copy", " ", c.getSpecFromTextNaive("      /copy qprotosrc"));
+		assertEquals("**", "?", c.getSpecFromTextNaive("**  Compile-time table"));
+        assertEquals("free form short stmt", ";", c.getSpecFromTextNaive("dcl-s;"));
 	}
+	
+	
+	// TODO I don't know how to mock this one up
+    @Test
+    public void testGetSpecFromView() {
+        ConvertFixedToFreeAction c = new ConvertFixedToFreeAction();
+
+        LpexView view = new LpexView();
+        view.doCommand("insert       *comment");
+        
+        // Pretend the cursor is on line 1
+        int thisLine = 0;
+        
+        assertEquals("Null input", "?", c.getSpecFromView(view, thisLine));
+        assertEquals("comment", "*", c.getSpecFromView(view, thisLine));
+        assertEquals("comment free 1", "*", c.getSpecFromView(view, thisLine));
+        assertEquals("H", "h", c.getSpecFromView(view, thisLine));
+        assertEquals("F", "f", c.getSpecFromView(view, thisLine));
+        assertEquals("E", "e", c.getSpecFromView(view, thisLine));
+        assertEquals("L", "l", c.getSpecFromView(view, thisLine));
+        assertEquals("I", "i", c.getSpecFromView(view, thisLine));
+        assertEquals("C", "c", c.getSpecFromView(view, thisLine));
+        assertEquals("O", "o", c.getSpecFromView(view, thisLine));
+        assertEquals("D", "d", c.getSpecFromView(view, thisLine));
+        assertEquals("P", "p", c.getSpecFromView(view, thisLine));
+        assertEquals("/copy", " ", c.getSpecFromView(view, thisLine));
+        assertEquals("**", " ", c.getSpecFromView(view, thisLine));
+        assertEquals("free form short stmt", ";", c.getSpecFromView(view, thisLine));
+    }
 
 	@Test
 	public void testIsComment() {

@@ -8,6 +8,9 @@ import java.util.ArrayList;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 /**
  * Convert Fixed-specification to fully free format
  * <p>Intended to convert one spec at a time to allow for easier review of the conversion.
@@ -16,6 +19,9 @@ import java.util.regex.Matcher;
  * @version 01.00.00 Initial
  * @version 01.00.01 Add H-spec
  * @version 01.00.02 Add global variable for column to start free-form in
+ * @version 01.01.00 Minor edit to error message for unknown spec type; 
+ *                   redo getSpecFromText
+ *                   add Log4J to help debugging
  *
  */ 
 public class ConvertFixedToFreeAction implements LpexAction {
@@ -51,6 +57,11 @@ public class ConvertFixedToFreeAction implements LpexAction {
 	@Override
 	public void doAction(LpexView view) {
 		
+	    // set up a logger for debugging/tracing purposes
+	    System.setProperty("log4j.configurationFile", "c:/buck/lpexextensions_log4j.xml");
+	    Logger logger = LogManager.getRootLogger();
+	    logger.trace("Log config file:" + System.getProperty("log4j.configurationFile"));
+	    
 		// work with the line the cursor is on
 		int thisLine = view.currentElement();
 		String sourceStmt = view.elementText(thisLine);
@@ -68,7 +79,7 @@ public class ConvertFixedToFreeAction implements LpexAction {
 		}
 
 		// one routine for each spec we're dealing with
-		String specType = getSpecFromText(sourceStmt);
+        String specType = getSpecFromTextNaive(sourceStmt);
 		
 		switch (specType) {
 			case "h":
@@ -81,9 +92,15 @@ public class ConvertFixedToFreeAction implements LpexAction {
 				dToFree(view, sourceStmt, thisLine);
 				break;
 			default:
-			    view.doCommand("set messageText specType is" + specType);
+			    view.doCommand("set messageText specType is unknown: *" + specType + "* - already free form?");
+//			    view.doCommand("set messageText sourceStmt: *" + sourceStmt + "*");			    
 			    break;
 		}
+		
+		// todo use more sophisticated detector based on LpexView
+//		String specTypeView = getSpecFromView(view, thisLine);
+//		view.doCommand("set messageText specTypeView is: *" + specTypeView + "*");
+
 		
 		return;
 	}
@@ -407,7 +424,51 @@ String getDataTypeKeyword(String fromPos, String len, String dataType, String de
 	return dataTypeKwd;
 }
 
+
+
+
+
+
+
+
+
 //utility methods
+
+/**
+* Extract RPG specification type (D, P, C, F) from a line of source code
+* @param sourceStmt String raw text
+* @return spec String lower case spec (c, d, f, p, etc. Blank for blank lines, * for comments, ? for unknown)
+* 
+*/
+String getSpecFromView(LpexView view, int thisLine) {
+    
+//    String sourceStmt = view.elementText(thisLine);
+
+    String spec = "?";
+    
+    // query elementClasses will return a list of parser classes applied 
+    // to the current line
+    String classes = view.query("elementClasses");
+    
+    // free format
+    if (classes.indexOf("Free") >= 1) {
+        return "!";
+    }
+    
+    // blank line
+    if (classes.indexOf("SPACE") >= 1) {
+        return " ";
+    }
+    
+    // comment
+    if (classes.indexOf("commentOnly") >= 1) {
+        return "*";
+    }
+    
+    return spec;
+}
+
+
 /**
 * Extract RPG specification type (D, P, C, F) from a line of source code
 * @param sourceStmt String raw text
@@ -415,11 +476,25 @@ String getDataTypeKeyword(String fromPos, String len, String dataType, String de
 * 
 * We don't need to worry about free-form declarations, because they're already free :-)
 */
-String getSpecFromText(String sourceStmt) {
-	String spec = " ";
+String getSpecFromTextNaive(String sourceStmt) {
+    // default to unknown
+	String spec = "?";
 	
-	if (sourceStmt.length() > 5 && isComment(sourceStmt) == false) {
+	// Naive implementation
+	// fails for data within a compile time table
+	// can't detect 'already free' lines
+	// long enough statement, not a comment
+	if (sourceStmt.length() > 5) { 
+	    
+	    // not a comment
+	    if (isComment(sourceStmt) == true) {
+	        return "*";
+	    }
+	    
+	    // not a compile time table
 		if (!sourceStmt.substring(0, 2).equals("**")) {
+		    
+		    // column 6 is the spec type
 			spec = sourceStmt.substring(5, 6).toLowerCase();
 		}
 	}
@@ -571,7 +646,7 @@ public HSpec(LpexView view, String sourceStmt, int thisLine) {
 	 * 
 	 */
 		
-	spec = getSpecFromText(sourceStmt);
+	spec = getSpecFromTextNaive(sourceStmt);
 	
 	isComment = isComment(sourceStmt);
 	
@@ -674,7 +749,7 @@ class DSpec {
 		 * 
 		 */
 			
-		spec = getSpecFromText(sourceStmt);
+		spec = getSpecFromTextNaive(sourceStmt);
 		
 		isComment = isComment(sourceStmt);
 		
@@ -740,7 +815,7 @@ class DSpec {
 			String defTypePrior1 = "";
 			boolean isCommentPrior = false;
 			
-			specPrior = getSpecFromText(sourceStmtPrior);
+			specPrior = getSpecFromTextNaive(sourceStmtPrior);
 			isCommentPrior = isComment(sourceStmtPrior);
 
 			// read another line if this is a comment

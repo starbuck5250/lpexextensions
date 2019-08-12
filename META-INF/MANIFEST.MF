@@ -2,11 +2,14 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: com.kc2hiz.lpexextensions;singleton:=true
-Bundle-Version: 1.1.0.qualifier
+Bundle-Version: 1.1.2.qualifier
 Bundle-Activator: com.kc2hiz.lpexextensions.Activator
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
- com.ibm.lpex;bundle-version="4.6.4"
+ com.ibm.lpex;bundle-version="4.6.4",
+ org.junit;bundle-version="4.12.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
-Export-Package: com.kc2hiz.lpexextensions;uses:="org.osgi.framework,com.ibm.lpex.core,org.eclipse.ui.plugin"
+Import-Package: org.apache.logging.log4j;version="2.11.1",
+ org.apache.logging.log4j.core;version="2.11.1"
+Bundle-ClassPath: .
